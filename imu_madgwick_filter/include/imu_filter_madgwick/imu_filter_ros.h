@@ -97,6 +97,9 @@ class ImuFilterRos
     bool publish_debug_topics_;
     bool remove_gravity_vector_;
     geometry_msgs::Vector3 mag_bias_;
+    geometry_msgs::Vector3 gyro_bias_;
+    geometry_msgs::Vector3 accel_bias_;
+
     double orientation_variance_;
     ros::Duration time_jump_threshold_;
 

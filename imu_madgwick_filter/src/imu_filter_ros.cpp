@@ -233,7 +233,11 @@ void ImuFilterRos::imuMagCallback(const ImuMsg::ConstPtr& imu_msg_raw,
 
     boost::mutex::scoped_lock lock(mutex_);
 
-    const geometry_msgs::Vector3& ang_vel = imu_msg_raw->angular_velocity;
+    geometry_msgs::Vector3 ang_vel;
+    ang_vel.x = imu_msg_raw->angular_velocity.x - gyro_bias_.x;
+    ang_vel.y = imu_msg_raw->angular_velocity.y - gyro_bias_.y;
+    ang_vel.z = imu_msg_raw->angular_velocity.z - gyro_bias_.z;
+
     const geometry_msgs::Vector3& lin_acc = imu_msg_raw->linear_acceleration;
     const geometry_msgs::Vector3& mag_fld = mag_msg->magnetic_field;
 
@@ -472,10 +476,23 @@ void ImuFilterRos::reconfigCallback(FilterConfig& config, uint32_t level)
     mag_bias_.x = config.mag_bias_x;
     mag_bias_.y = config.mag_bias_y;
     mag_bias_.z = config.mag_bias_z;
+
+    gyro_bias_.x = config.gyro_bias_x;
+    gyro_bias_.y = config.gyro_bias_y;
+    gyro_bias_.z = config.gyro_bias_z;
+    
+    // accel_bias_.x = config.accel_bias_x;
+    // accel_bias_.y = config.accel_bias_y;
+    // accel_bias_.z = config.accel_bias_z;
+
     orientation_variance_ =
         config.orientation_stddev * config.orientation_stddev;
     ROS_INFO("Magnetometer bias values: %f %f %f", mag_bias_.x, mag_bias_.y,
              mag_bias_.z);
+    ROS_INFO("gyro bias values: %f %f %f", gyro_bias_.x, gyro_bias_.y,
+             gyro_bias_.z);
+    // ROS_INFO("accelerometer bias values: %f %f %f", accel_bias_.x, accel_bias_.y,
+    //          accel_bias_.z);
 }
 
 void ImuFilterRos::checkTopicsTimerCallback(const ros::TimerEvent&)
