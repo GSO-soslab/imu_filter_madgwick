@@ -33,20 +33,20 @@ class calibrate_imu:
         self.sampling = False
 
         mag_topic = rospy.get_param('~mag_topic', '/magnetometer')
-        imu_topic = rospy.get_param('~imu_topic', '/nav/sensors/microstrain/imu/raw')
+        # imu_topic = rospy.get_param('~imu_topic', '/imu')
         self.publish_calibrated = rospy.get_param("~publish_calibrated", False)
         self.max_samples = rospy.get_param("~max_samples", 10000)
         self.intermittent_mode = rospy.get_param("~intermittent_mode", False)
         self.multi_datasets = rospy.get_param("~multi_datasets", False)
         self.__location__ = rospy.get_param("~calibrations_dir", "/result")
-        self.calibrated_mag_pub = rospy.Publisher('/imu/mag_calibrated',MagneticField, queue_size='1')
+        self.calibrated_mag_pub = rospy.Publisher('~imu/mag_calibrated', MagneticField, queue_size='1')
         self.load_calibration()
 
         rospy.Subscriber(mag_topic,MagneticField,self.mag_cb)
-        rospy.Subscriber(imu_topic,Imu, self.imu_cb)
-        rospy.Service('start_sampling',Empty,self.start_sampling)
-        rospy.Service('stop_sampling',Empty,self.stop_sampling)
-        rospy.Service('calibrate_mag',Empty,self.calibrate_mag)
+        # rospy.Subscriber(imu_topic,Imu, self.imu_cb)
+        rospy.Service('~start_sampling',Empty,self.start_sampling)
+        rospy.Service('~stop_sampling',Empty,self.stop_sampling)
+        rospy.Service('~calibrate_mag',Empty,self.calibrate_mag)
 
     def load_calibration(self):
         file_path = os.path.join(self.__location__,"last_mag_calibration")
