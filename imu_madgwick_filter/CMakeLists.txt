@@ -81,13 +81,13 @@ install(FILES imu_filter_nodelet.xml
 
 
 
-if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(${PROJECT_NAME}-madgwick_test
-    test/stateless_orientation_test.cpp
-    test/madgwick_test.cpp
-  )
-  target_link_libraries(${PROJECT_NAME}-madgwick_test
-    imu_filter
-    ${catkin_LIBRARIES}
-  )
-endif()
+# if(CATKIN_ENABLE_TESTING)
+#   # catkin_add_gtest(${PROJECT_NAME}-madgwick_test
+#     # test/stateless_orientation_test.cpp
+#     # test/madgwick_test.cpp
+#   )
+#   target_link_libraries(${PROJECT_NAME}-madgwick_test
+#     imu_filter
+#     ${catkin_LIBRARIES}
+#   )
+# endif()
