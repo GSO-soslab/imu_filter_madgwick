@@ -39,7 +39,7 @@ class calibrate_imu:
         self.intermittent_mode = rospy.get_param("~intermittent_mode", False)
         self.multi_datasets = rospy.get_param("~multi_datasets", False)
         self.__location__ = rospy.get_param("~calibrations_dir", "/result")
-        self.calibrated_mag_pub = rospy.Publisher('~imu/mag_calibrated', MagneticField, queue_size='1')
+        self.calibrated_mag_pub = rospy.Publisher('~imu/mag_calibrated', MagneticField, queue_size=1)
         self.load_calibration()
 
         rospy.Subscriber(mag_topic,MagneticField,self.mag_cb)
