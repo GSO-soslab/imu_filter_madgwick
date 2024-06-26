@@ -59,7 +59,10 @@ class calibrate_gyro:
     def stop_sampling(self,req):
         rospy.loginfo('Stopped collecting gyro readings')
         self.sampling = False
-        rospy.loginfo('gyro bias = '+ self.gyro_bias)
+        # rospy.loginfo('gyro bias = '+ self.gyro_bias)
+        rospy.loginfo("final gyro bias x =" + str(self.gyro_bias.vector.x) )
+        rospy.loginfo("final gyro bias y =" + str(self.gyro_bias.vector.y) )
+        rospy.loginfo("final gyro bias z =" + str(self.gyro_bias.vector.z) )
         return EmptyResponse()
 
 if __name__=='__main__':
