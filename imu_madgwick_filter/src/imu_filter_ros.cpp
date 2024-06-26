@@ -494,8 +494,8 @@ void ImuFilterRos::reconfigCallback(FilterConfig& config, uint32_t level)
              mag_bias_.z);
     ROS_INFO("gyro bias values: %f %f %f", gyro_bias_.x, gyro_bias_.y,
              gyro_bias_.z);
-    // ROS_INFO("accelerometer bias values: %f %f %f", accel_bias_.x, accel_bias_.y,
-    //          accel_bias_.z);
+    ROS_INFO("accelerometer bias values: %f %f %f", accel_bias_.x, accel_bias_.y,
+             accel_bias_.z);
 }
 
 void ImuFilterRos::checkTopicsTimerCallback(const ros::TimerEvent&)
