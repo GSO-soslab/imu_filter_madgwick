@@ -238,7 +238,10 @@ void ImuFilterRos::imuMagCallback(const ImuMsg::ConstPtr& imu_msg_raw,
     ang_vel.y = imu_msg_raw->angular_velocity.y - gyro_bias_.y;
     ang_vel.z = imu_msg_raw->angular_velocity.z - gyro_bias_.z;
 
-    const geometry_msgs::Vector3& lin_acc = imu_msg_raw->linear_acceleration;
+    geometry_msgs::Vector3 lin_acc;
+    lin_acc.x = imu_msg_raw->linear_acceleration.x - accel_bias_.x;
+    lin_acc.y = imu_msg_raw->linear_acceleration.y - accel_bias_.y;
+    lin_acc.z = imu_msg_raw->linear_acceleration.z - accel_bias_.z;
     const geometry_msgs::Vector3& mag_fld = mag_msg->magnetic_field;
 
     ros::Time time = imu_msg_raw->header.stamp;
@@ -481,9 +484,9 @@ void ImuFilterRos::reconfigCallback(FilterConfig& config, uint32_t level)
     gyro_bias_.y = config.gyro_bias_y;
     gyro_bias_.z = config.gyro_bias_z;
     
-    // accel_bias_.x = config.accel_bias_x;
-    // accel_bias_.y = config.accel_bias_y;
-    // accel_bias_.z = config.accel_bias_z;
+    accel_bias_.x = config.accel_bias_x;
+    accel_bias_.y = config.accel_bias_y;
+    accel_bias_.z = config.accel_bias_z;
 
     orientation_variance_ =
         config.orientation_stddev * config.orientation_stddev;
