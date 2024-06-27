@@ -29,11 +29,11 @@ public:
 
         sub_ = nh_.subscribe("/imu_input", 100, &CalibAccel::imuCallback, this);
 
-        start_srv_ = nh_.advertiseService("/start_sampling", &CalibAccel::startCallback, this);
+        start_srv_ = pnh_.advertiseService("start_sampling", &CalibAccel::startCallback, this);
 
-        stop_srv_ = nh_.advertiseService("/stop_sampling", &CalibAccel::stopCallback, this);
+        stop_srv_ = pnh_.advertiseService("stop_sampling", &CalibAccel::stopCallback, this);
 
-        calib_srv_ = nh_.advertiseService("/calibrate_accl", &CalibAccel::calibCallback, this);
+        calib_srv_ = pnh_.advertiseService("calibrate_accl", &CalibAccel::calibCallback, this);
 
         pnh_.param<int>("max_samples", max_samples_, 100);
         pnh_.param<bool>("log", log_, false);
@@ -210,7 +210,9 @@ private:
             R_I_G_.block(0, 2, 3, 1) = z_I_G;
 
             Eigen::Vector3d ba = i - R_I_G_ * Eigen::Vector3d(0.0,0.0,9.81);
-            ba_avg_ += ba;
+            ba_avg_.x() += ba.x();
+            ba_avg_.y() += ba.y();
+            ba_avg_.z() += ba.z();
 
             // log if needed
             if(log_)
