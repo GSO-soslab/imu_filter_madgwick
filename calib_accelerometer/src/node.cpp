@@ -1,6 +1,9 @@
 #include <vector>
 #include <atomic>
 #include <Eigen/Eigen>
+#include <fstream>
+#include <chrono>
+#include <ctime>  
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
@@ -19,12 +22,12 @@ public:
     //! \param pnh the private node handler
     //! 
     CalibAccel(ros::NodeHandle nh, ros::NodeHandle pnh): 
-        nh_(nh), pnh_(pnh), save_(false)
+        nh_(nh), pnh_(pnh), save_(false), calib_(false)
     {
         Eigen::Vector3d ba_avg_ = Eigen::Vector3d::Zero();
         Eigen::Matrix3d R_I_G_ = Eigen::Matrix3d::Zero();
 
-        sub_ = nh_.subscribe("/imu_input", 1, &CalibAccel::imuCallback, this);
+        sub_ = nh_.subscribe("/imu_input", 100, &CalibAccel::imuCallback, this);
 
         start_srv_ = nh_.advertiseService("/start_sampling", &CalibAccel::startCallback, this);
 
@@ -33,6 +36,8 @@ public:
         calib_srv_ = nh_.advertiseService("/calibrate_accl", &CalibAccel::calibCallback, this);
 
         pnh_.param<int>("max_samples", max_samples_, 100);
+        pnh_.param<bool>("log", log_, false);
+
     }
 
     //! \brief IMU callback: store the IMU acceleration and do calibration if needed
@@ -64,6 +69,10 @@ public:
             if(buffer_accl_.size() % 100 == 0)
             {
                 ROS_INFO("Got %ld acceleration readings", buffer_accl_.size());
+                ROS_INFO("IMU accel example: %f, %f, %f", 
+                    msg->linear_acceleration.x,
+                    msg->linear_acceleration.y,
+                    msg->linear_acceleration.z);
             }
         }
 
@@ -78,6 +87,7 @@ public:
             calibrateAccl();
 
             std::vector<Eigen::Vector3d>().swap(buffer_accl_);
+            // buffer_accl_.clear();
         }
 
         // publish tf
@@ -88,8 +98,8 @@ public:
             
             tf::Matrix3x3 mat;
             tf::matrixEigenToTF(R_I_G_.transpose(), mat);
-            tf::Transform transform = tf::Transform(mat, tf::Vector3(0.01,0.01,0.01));
-            br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "test"));
+            tf::Transform transform = tf::Transform(mat, tf::Vector3(0.0,0.0,0.0));
+            br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "imu_calib"));
         }
     }
 
@@ -132,6 +142,9 @@ private:
 
     // Parameters
     int max_samples_;
+    bool log_;
+    std::string log_path_;
+    std::ofstream file;
 
     // Buffer
     std::vector<Eigen::Vector3d> buffer_accl_;
@@ -160,6 +173,18 @@ private:
     //!
     void calibrateAccl()
     {
+        // log if needed
+        if(log_)
+        {
+            // prepare the log path
+            auto system_time = std::chrono::system_clock::now();
+            std::time_t system_time_t = std::chrono::system_clock::to_time_t(system_time);
+            auto time_form = std::ctime(&system_time_t);
+            log_path_ = "/tmp/calib_accel_" + std::string(time_form) + ".txt";
+
+            // open log path
+            file.open(log_path_, std::ios_base::app);//std::ios_base::app
+        }
 
         for(const auto& i: buffer_accl_)
         {
@@ -186,10 +211,24 @@ private:
 
             Eigen::Vector3d ba = i - R_I_G_ * Eigen::Vector3d(0.0,0.0,9.81);
             ba_avg_ += ba;
+
+            // log if needed
+            if(log_)
+            {
+                file << ba.transpose()<<std::endl;
+            }
+        }
+
+        // log if needed
+        if(log_)
+        {
+            file<<"sum bias:\n";
+            file<<ba_avg_.transpose()<<std::endl;
+            file<<"buffer size:"<<buffer_accl_.size()<<std::endl;
+            file.close();             
         }
 
         ba_avg_  = ba_avg_ / buffer_accl_.size();
-
 
         std::cout<<"\n====================\n";
         std::cout<<"Result:\n";
